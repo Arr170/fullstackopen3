@@ -1,7 +1,24 @@
 const express = require('express')
+const morgan = require('morgan')
 const app = express()
+app.use(express.json())
 
-let notes = [
+morgan.token('body', function(req, res,){
+  const body = req.body
+  return JSON.stringify(body)})
+  app.use(morgan((tokens, req, res) => {
+    return [
+        tokens.method(req, res),
+        tokens.url(req, res),
+        tokens.status(req, res),
+        tokens.res(req, res, 'content-length'), '-',
+        tokens['response-time'](req, res), 'ms',
+        tokens.body(req, res)
+    ].join(' ')
+}))
+
+
+let names = [
     { 
       "id": 1,
       "name": "Arto Hellas", 
@@ -24,14 +41,54 @@ let notes = [
     }
 ]
 
-app.get('/api/persons', (request, response) => {
- response.json(notes)
+app.get('/api/persons', (require, response) => {
+ response.json(names)
 })
 
 app.get('/info', (request, response) => {
-    
+    const personsNumber = names.length
+    const date = new Date()
+    const info = '<p>Phonebook has info about '+ personsNumber+ ' people</p><p>'+ date + '</p>'
+    response.send(info)
 })
 
-const PORT = 3001
-app.listen(PORT)
-console.log(`Server running on port ${PORT}`)
+app.get('/api/persons/:id', (request, response) => {
+  const id = Number(request.params.id)
+  const name = names.find(name => name.id === id)
+  
+  if(name){response.json(name)}
+  else{response.status(404).end()}
+})
+
+app.delete('/api/persons/:id', (request, response) => {
+  const id = Number(request.params.id)
+  names = names.filter(name => name.id !== id)
+  response.status(204).end()
+})
+
+const generateId = (max) => {return(Math.floor(Math.random()*max))}
+
+app.post('/api/persons', (request, response) => {
+  const body = request.body
+  const dublicate = names.find(name => name.name === body.name)
+
+  if(dublicate !== undefined){return response.status(400).json({error: 'name must be unique'})}
+  if(!body.name){return response.status(400).json({error: 'name missing'})}
+  if(!body.number){return response.status(400).json({error: 'number missing'})}
+
+  const name = {
+    name: body.name,
+    number: body.number,
+    id: generateId(100),
+
+  }
+  
+  names = names.concat(name)
+
+  response.json(name)
+})
+
+const PORT = process.env.PORT || 3001
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`)
+})
