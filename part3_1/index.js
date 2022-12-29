@@ -1,9 +1,11 @@
 const express = require('express')
 const morgan = require('morgan')
+const cors = require('cors')
 const app = express()
 app.use(express.json())
+app.use(cors())
 
-morgan.token('body', function(req, res,){
+/*morgan.token('body', function(req, res,){
   const body = req.body
   return JSON.stringify(body)})
   app.use(morgan((tokens, req, res) => {
@@ -15,13 +17,13 @@ morgan.token('body', function(req, res,){
         tokens['response-time'](req, res), 'ms',
         tokens.body(req, res)
     ].join(' ')
-}))
+}))*/
 
 
 let names = [
     { 
       "id": 1,
-      "name": "Arto Hellas", 
+      "name": "Arte aaaa", 
       "number": "040-123456"
     },
     { 
