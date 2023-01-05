@@ -1,0 +1,8 @@
+post http://localhost:3000/api/blogs
+Content-Type: application/json
+
+{
+    "title": "hello",
+    "author": "me"
+
+}
